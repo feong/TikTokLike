@@ -76,6 +76,7 @@ export function PagingList<T extends {id: number}>(
       {...props} // props should not be customized should be put under this line.
       pagingEnabled
       bounces={false}
+      showsVerticalScrollIndicator={false}
       scrollsToTop={false}
       renderItem={(item) => {
         const shouldMount =
