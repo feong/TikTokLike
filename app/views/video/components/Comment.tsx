@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {StyleSheet, View, StyleProp, ViewProps} from 'react-native';
 import {Colors, IconButton, Text} from 'react-native-paper';
+import {useNavigation} from '@react-navigation/native';
 
 interface CommentProps {
   videoId: number;
@@ -9,6 +10,7 @@ interface CommentProps {
 }
 
 export const Comment: React.FC<CommentProps> = (props) => {
+  const navigation = useNavigation();
   const {videoId, comment, style} = props;
 
   return (
@@ -17,7 +19,9 @@ export const Comment: React.FC<CommentProps> = (props) => {
         icon="chat-processing"
         color={Colors.white}
         size={40}
-        onPress={() => console.log('A')}
+        onPress={() => {
+          navigation.navigate('Comment');
+        }}
       />
       <Text style={styles.comment}>{comment}</Text>
     </View>
