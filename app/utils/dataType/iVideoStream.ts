@@ -4,4 +4,6 @@ export interface iVideoStream {
   title: string;
   author: string;
   date: number;
+  like: number;
+  comment: number;
 }
