@@ -20,7 +20,7 @@ export const Comment: React.FC<CommentProps> = (props) => {
         color={Colors.white}
         size={40}
         onPress={() => {
-          navigation.navigate('Comment');
+          navigation.navigate('Comment', {videoId});
         }}
       />
       <Text style={styles.comment}>{comment}</Text>

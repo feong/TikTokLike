@@ -1,25 +1,22 @@
 import * as React from 'react';
-import {
-  StyleSheet,
-  View,
-  StyleProp,
-  ViewProps,
-  TouchableWithoutFeedback,
-} from 'react-native';
+import {StyleSheet, View, TouchableWithoutFeedback} from 'react-native';
 import {Colors} from 'react-native-paper';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, RouteProp} from '@react-navigation/native';
 import {CommentHeader} from './components/CommentHeader';
 import {CommentList} from './components/CommentList';
+import {CommentPost} from './components/CommentPost';
+
+type ParamList = {
+  CommentStream: {videoId: number};
+};
 
 interface CommentStreamProps {
-  videoId: number;
-  style?: StyleProp<ViewProps>;
+  route: RouteProp<ParamList, 'CommentStream'>;
 }
 
 export const CommentStream: React.FC<CommentStreamProps> = (props) => {
   const navigation = useNavigation();
-  const {videoId} = props;
-
+  const {videoId} = props.route.params;
   return (
     <View style={styles.container}>
       <TouchableWithoutFeedback onPress={navigation.goBack}>
@@ -28,6 +25,7 @@ export const CommentStream: React.FC<CommentStreamProps> = (props) => {
       <View style={styles.commentPanel}>
         <CommentHeader title={'ABCD'} />
         <CommentList videoId={videoId} />
+        <CommentPost videoId={videoId} />
       </View>
     </View>
   );
@@ -43,7 +41,7 @@ const styles = StyleSheet.create({
   },
   commentPanel: {
     flex: 1,
-    backgroundColor: Colors.black,
+    backgroundColor: Colors.grey900,
     borderTopRightRadius: 8,
     borderTopLeftRadius: 8,
   },
