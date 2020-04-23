@@ -9,6 +9,7 @@ import {
 import {Colors} from 'react-native-paper';
 import {useNavigation} from '@react-navigation/native';
 import {CommentHeader} from './components/CommentHeader';
+import {CommentList} from './components/CommentList';
 
 interface CommentStreamProps {
   videoId: number;
@@ -26,6 +27,7 @@ export const CommentStream: React.FC<CommentStreamProps> = (props) => {
       </TouchableWithoutFeedback>
       <View style={styles.commentPanel}>
         <CommentHeader title={'ABCD'} />
+        <CommentList videoId={videoId} />
       </View>
     </View>
   );
