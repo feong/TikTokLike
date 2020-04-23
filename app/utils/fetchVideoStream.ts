@@ -9,5 +9,10 @@ export const fetchVideoStream = async (params: {
     afterIndex === undefined
       ? 0
       : videoStream.data.findIndex((item) => item.id > afterIndex);
-  return index === -1 ? [] : videoStream.data.slice(index, length);
+  if (index === -1) {
+    return {data: [], remain: 0};
+  } else {
+    const data = videoStream.data.slice(index, length);
+    return {data, remain: videoStream.data.length - index - data.length};
+  }
 };
