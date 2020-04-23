@@ -69,9 +69,7 @@ export function PagingList<T extends {id: number}>(
 
   return (
     <FlatList
-      keyExtractor={(item, index) =>
-        item && item.id ? `${item.id}` : `${index}`
-      }
+      keyExtractor={(item) => `${item.id}`}
       initialNumToRender={20}
       {...props} // props should not be customized should be put under this line.
       pagingEnabled
