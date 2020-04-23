@@ -23,31 +23,29 @@ export const CommentPost: React.FC<CommentPostProps> = (props) => {
 
   return (
     <TouchableWithoutFeedback>
-      <KeyboardAvoidingView behavior="padding">
-        <SafeAreaView style={styles.container}>
-          <TextInput
-            value={text}
-            onChangeText={setText}
-            style={styles.text}
-            placeholder={INITIAL_TEXT}
-            placeholderTextColor={Colors.grey100}
-            onFocus={() => setText('')}
-            onBlur={() => setText(INITIAL_TEXT)}
-          />
-          <IconButton
-            icon="arrow-left-bold-circle"
-            size={32}
-            color={Colors.blue500}
-            onPress={async () => {
-              if (text) {
-                await postComment(videoId, text);
-                Keyboard.dismiss();
-                onPosted();
-              }
-            }}
-          />
-        </SafeAreaView>
-      </KeyboardAvoidingView>
+      <SafeAreaView style={styles.container}>
+        <TextInput
+          value={text}
+          onChangeText={setText}
+          style={styles.text}
+          placeholder={INITIAL_TEXT}
+          placeholderTextColor={Colors.grey100}
+          onFocus={() => setText('')}
+          onBlur={() => setText(INITIAL_TEXT)}
+        />
+        <IconButton
+          icon="arrow-left-bold-circle"
+          size={32}
+          color={Colors.blue500}
+          onPress={async () => {
+            if (text) {
+              await postComment(videoId, text);
+              Keyboard.dismiss();
+              onPosted();
+            }
+          }}
+        />
+      </SafeAreaView>
     </TouchableWithoutFeedback>
   );
 };
