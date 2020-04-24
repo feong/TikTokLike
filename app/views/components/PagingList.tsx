@@ -66,7 +66,7 @@ export function PagingList<T extends {id: number}>(
     setCurrentPageIndex(index);
     if (
       remain > 0 &&
-      data.length - currentPageIndex < DEFAULT_PRE_FETCH_INDEX
+      data.length - currentPageIndex - 1 < DEFAULT_PRE_FETCH_INDEX
     ) {
       fetchData();
     }
