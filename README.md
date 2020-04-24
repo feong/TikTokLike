@@ -4,7 +4,7 @@
 
 ## 需求分析
 
-![TikTok](https://i.loli.net/2020/04/24/WHbcxu7twZ5XENs.png)
+![TikTok](https://i.loli.net/2020/04/24/TpyK8Cz1SuBIsG3.jpg)
 
 * 上下滑切换视频，同时只能有一个视频正在播放；
 * 可以展示评论列表；
@@ -30,7 +30,7 @@
 
 ## 实现效果预览
 
-![TikTokLike](https://i.loli.net/2020/04/24/jBWpP6TZefaYHD5.png)
+![TikTokLike](https://i.loli.net/2020/04/24/TpyK8Cz1SuBIsG3.jpg)
 
 完成需求列表中的所有功能，其中第3点没有做成那种可以下拉关闭的效果，但也不是直接使用的Modal，而是根据`react-native-navigation`提供的方案，把它做成了一个新的页面栈，这样，弹出来的页面可以很简单的实现弹出内容的页面跳转。
 
