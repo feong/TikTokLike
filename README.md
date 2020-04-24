@@ -4,7 +4,7 @@
 
 ## 需求分析
 
-![TikTok](https://i.loli.net/2020/04/24/TpyK8Cz1SuBIsG3.jpg)
+![TikTok](https://i.loli.net/2020/04/24/6hM5wGngf4Lyqzo.jpg)
 
 * 上下滑切换视频，同时只能有一个视频正在播放；
 * 可以展示评论列表；
