@@ -23,7 +23,7 @@ export const CommentStream: React.FC<CommentStreamProps> = (props) => {
   const navigation = useNavigation();
   const {videoId} = props.route.params;
 
-  const [fetchTime, setFetchTime] = React.useState(Date.now());
+  const [fetchTime, setFetchTime] = React.useState(Date.now()); // use fetchTime to force CommentList update
   const [commentCount, setCommentCount] = React.useState<number>();
   const onPosted = React.useCallback(() => {
     setFetchTime(Date.now());
