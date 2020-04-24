@@ -6,9 +6,15 @@ const DEFAULT_PRE_FETCH_INDEX = 3; // if there is only 3 item left, then fetch m
 const DEFAULT_UNMOUNT_LENGTH_AWAY = 5; // the item after 5 page or before 5 page of current will be unmount
 
 interface Props<ItemT, Variables>
-  extends Pick<
+  extends Omit<
     FlatListProps<ItemT>,
-    Exclude<keyof FlatListProps<ItemT>, 'data'>
+    | 'data'
+    | 'pagingEnabled'
+    | 'bounces'
+    | 'showsVerticalScrollIndicator'
+    | 'scrollsToTop'
+    | 'onLayout'
+    | 'onScroll'
   > {
   query: (
     variables: {
