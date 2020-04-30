@@ -13,7 +13,7 @@ export const HeartAnimationFullView = React.memo(
     const {points, style} = props;
 
     return (
-      <View style={style}>
+      <View style={style} pointerEvents="none">
         {points.map((item) => (
           <HeartAnimation
             key={item.timestamp}
