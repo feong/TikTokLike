@@ -13,23 +13,27 @@ interface FriendTabProps {
 
 const Heart = () => <Icon name="ios-heart" size={64} color={Colors.red700} />;
 
-export const HeartAnimation: React.FC<FriendTabProps> = (props) => {
+export const HeartAnimation = React.memo((props: FriendTabProps) => {
+  const [finished, setFinished] = React.useState(false);
+
+  if (finished) {
+    return null;
+  }
+
   // we create a clock node
   const clock = new Clock();
-  const opacity = runNumberTiming({clock, init: 1, dest: 0});
+  const opacity = runNumberTiming({
+    clock,
+    init: 1,
+    dest: 0,
+    onFinished: () => {
+      setFinished(true);
+    },
+  });
   const scale = runNumberTiming({clock, init: 0, dest: 2});
   return (
-    <Animated.View
-      style={[
-        {
-          //   alignSelf: 'flex-start',
-          //   marginTop: 100,
-          opacity,
-          transform: [{scale}],
-        },
-        props.style,
-      ]}>
+    <Animated.View style={[{opacity, transform: [{scale}]}, props.style]}>
       <Heart />
     </Animated.View>
   );
-};
+});
