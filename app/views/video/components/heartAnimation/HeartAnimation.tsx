@@ -7,13 +7,13 @@ import {StyleProp, ViewStyle} from 'react-native';
 
 const {Clock} = Animated;
 
-interface FriendTabProps {
+interface HeartAnimationProps {
   style?: StyleProp<ViewStyle>;
 }
 
 const Heart = () => <Icon name="ios-heart" size={64} color={Colors.red700} />;
 
-export const HeartAnimation = React.memo((props: FriendTabProps) => {
+export const HeartAnimation = React.memo((props: HeartAnimationProps) => {
   const [finished, setFinished] = React.useState(false);
 
   if (finished) {
