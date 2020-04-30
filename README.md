@@ -15,7 +15,7 @@
 第二和第三个功能要求的数据暂不涉及后端服务，直接mock数据。
 
 视频数据是从马家挖来的，本项目仅供学习使用，如果侵权请联系删除。
-评论数据来自[JSONPlaceholder - Fake online REST API for developers](http://jsonplaceholder.typicode.com)，这次没有做网络请求，直接把数据以json格式保存在项目中了。如果要替换也很简单，替换一个请求的实现就好了，后面再说。
+评论数据来自[JSONPlaceholder - Fake online REST API for developers](http://jsonplaceholder.typicode.com)，这次没有做网络请求，直接把数据以json格式保存在项目中了。如果要实现网络请求，直接替换对应方法就好。
 
 ### UI功能
 
@@ -32,10 +32,16 @@
 
 ![TikTokLike](https://i.loli.net/2020/04/24/TpyK8Cz1SuBIsG3.jpg)
 
-完成需求列表中的所有功能，其中第3点没有做成那种可以下拉关闭的效果，但也不是直接使用的Modal，而是根据`react-native-navigation`提供的方案，把它做成了一个新的页面栈，这样，弹出来的页面可以很简单的实现弹出内容的页面跳转。
+完成需求列表中的所有功能，其中第3点没有做成那种可以下拉关闭的效果，我们的实现不是直接使用的Modal，而是根据`react-native-navigation`提供的方案，把它做成了一个新的页面栈，这样，弹出来的页面可以很简单的实现弹出内容的页面跳转。
 
 这样，整个App的页面逻辑关系如下：
 ![5个tab](https://i.loli.net/2020/04/22/bpF8VXeORvkrIH9.png)
+
+### 额外功能
+
+* 双击点赞，显示❤️的动画
+  
+![❤️](https://i.loli.net/2020/04/30/PdwNTvUQ9SXkuLn.png)
 
 ## 项目搭建
 
@@ -433,11 +439,212 @@ export const VideoTab: React.FC<VideoTabProps> = () => {
 };
 ```
 
+## 额外的实现
+
+### 双击点赞❤️
+
+在这里我们定义：一定时间内，视图进行位移、变形就是简单的动画。实质就是有一个值能随着时间按预定的方式更新，当这个值用在一个视图的样式中，就能实现动画。
+我们将用`react-native-reanimated`来实现这个值，稍后会说。
+
+先梳理动画交互逻辑：
+
+1. 视频增加单击和双击事件（这个事件放在视频所在的容器中会更加合理，状态在容器中管理）
+2. 单击视频暂停/继续播放
+3. 双击在事件所在位置生成一个爱心动画：大小0到2倍拉伸；透明度从1到0
+
+在之前的实现中，我们用的是官方库中的`TouchableWithoutFeedback`，他能很简单的实现单击的响应，要实现双击就需要自己记录两次点击的时间差了，繁琐。有没有更简单的实现呢？还记得我们装`react-navigation`这个库的时候是不是额外安装了`react-native-gesture-handler`这个库吗？在官网可以了解，它是一个为交互提供简单控制的方案，实现双击不在话下，直接上官网实现[Cross handler interactions · React Native Gesture Handler](https://software-mansion.github.io/react-native-gesture-handler/docs/interactions.html)
+
+```typescript
+const onSingleTapped = (event: TapGestureHandlerStateChangeEvent) => {
+  if (event.nativeEvent.state === State.ACTIVE) {
+    const nextState = !paused;
+    setPaused(nextState);
+    onPausedChanged && onPausedChanged(nextState);
+  }
+};
+
+const onDoubleTapped = (event: TapGestureHandlerStateChangeEvent) => {
+  if (event.nativeEvent.state === State.ACTIVE) {
+    onDoubleTap &&
+      onDoubleTap({x: event.nativeEvent.x, y: event.nativeEvent.y});
+  }
+};
+
+<TapGestureHandler
+  waitFor={doubleTap}
+  onHandlerStateChange={onSingleTapped}>
+  <TapGestureHandler
+    ref={doubleTap}
+    onHandlerStateChange={onDoubleTapped}
+    numberOfTaps={2}>
+    <View style={styles.backgroundVideo}>
+      <RNVideo repeat paused={paused} source={{uri}} style={styles.video} />
+    </View>
+  </TapGestureHandler>
+</TapGestureHandler>
+```
+
+继续说动画值用`react-native-reanimated`的原因：
+
+1. 流行，很多第三方库都在用；
+2. 强大，动画按条件判断渲染不同效果不需要通过JS，直接在原生完成。
+
+现在，我们需要的就是一个能变化的`scale`值，和一个`opacity`值：
+
+```typescript
+/**
+ * @param params.init 初值
+ * @param params.dest 目标值
+ * @param params.duration 动画时间
+ * @param params.clock 控制器
+ * @param params.onFinished 动画结束的回调
+ */
+export const runNumberTiming = (params: {
+  init: number;
+  dest: number;
+  duration?: number;
+  clock?: Animated.Clock;
+  onFinished?: () => void;
+}) => {
+  const {
+    init,
+    dest,
+    duration = 2000,
+    clock = new Clock(),
+    onFinished = () => {},
+  } = params;
+  const state = {
+    finished: new Value(0),
+    position: new Value(init),
+    time: new Value(0),
+    frameTime: new Value(0),
+  };
+
+  const config = {
+    duration,
+    toValue: new Value(dest),
+    easing: Easing.inOut(Easing.ease),
+  };
+
+  // 下面这些方法在动画的每一帧都将重新计算
+  return block([
+    cond(
+      clockRunning(clock),
+      [
+        // 如果动画正在进行，且有新的目标值，则更新目标值
+        set(config.toValue, dest),
+      ],
+      [
+        // 启动控制器
+        startClock(clock),
+      ],
+    ),
+    // 动画值的更新方式
+    timing(clock, state, config),
+    // 动画结束，关闭控制器，调用callback
+    cond(state.finished, [stopClock(clock), call([], onFinished)]),
+    // 返回动画值
+    state.position,
+  ]);
+};
+```
+
+视图部分：
+
+```typescript
+export const HeartAnimation = React.memo((props: HeartAnimationProps) => {
+  const {offsetX, offsetY} = props;
+  const [finished, setFinished] = React.useState(false);
+
+  // 为了节省空间，动画结束后，移除视图
+  if (finished) {
+    return null;
+  }
+
+  // 使用同一个动画控制器，动画opacity和scale属性
+  const clock = new Clock();
+  const opacity = runNumberTiming({
+    clock,
+    init: 1,
+    dest: 0,
+    onFinished: () => {
+      setFinished(true);
+    },
+  });
+  const scale = runNumberTiming({clock, init: 0, dest: 2});
+  return (
+    <Animated.View
+      style={{
+        position: 'absolute',
+        top: offsetY - HEART_ICON_SIZE / 2,
+        left: offsetX - HEART_ICON_SIZE / 2,
+        opacity,
+        transform: [{scale}],
+      }}>
+      <Heart />
+    </Animated.View>
+  );
+});
+```
+
+当用户双击视频之后，我们拿到一个坐标，把这个坐标一一记录到一个数组中，然后将数组传递给爱心朦板，这个朦板需要占满视频，且不响应交互事件，然后在朦板中在对应的坐标绘制❤️动画
+
+```typescript
+export const VideoSocials: React.FC<VideoSocialsProps> = (props) => {
+  const [points, setPoints] = React.useState<iPointStamp[]>([]);
+  const {data, paused, onPausedChanged} = props;
+
+  const onVideoDoubleTap = React.useCallback((point: iPoint) => {
+    setPoints((pre) =>
+      pre.concat(Object.assign({timestamp: Date.now()}, point)),
+    ); // 将坐标存入数组
+  }, []);
+
+  return (
+    <View style={styles.container}>
+      <Video
+        uri={data.uri}
+        paused={paused}
+        onPausedChanged={onPausedChanged}
+        onDoubleTap={onVideoDoubleTap}
+      />
+      <Comment videoId={data.id} comment={data.comment} style={styles.social} />
+      {/* 坐标数组传到朦板中 */}
+      <HeartAnimationFullView style={styles.heart} points={points} />
+    </View>
+  );
+};
+```
+
+```typescript
+export const HeartAnimationFullView = React.memo(
+  (props: HeartAnimationFullViewProps) => {
+    const {points, style} = props;
+
+    // 朦板的pointerEvents别忘记设置
+    return (
+      <View style={style} pointerEvents="none">
+        {points.map((item) => (
+          <HeartAnimation
+            key={item.timestamp}
+            offsetX={item.x}
+            offsetY={item.y}
+          />
+        ))}
+      </View>
+    );
+  },
+);
+```
+
+完工
+
 ## TODO
 
 以上就是这次的需求内容，那么接下来会添加一些动画效果来提升用户体验。
 
-* ❤️Like动画
+* ~~❤️Like动画~~（已完成）
+* mock请求api的更新
 
 tips
 
@@ -449,3 +656,5 @@ refs
 * *[Getting Started · React Native Paper](https://reactnative.dev/docs/typescript)*
 * *[Opening a full-screen modal | React Navigation](https://reactnavigation.org/docs/modal)*
 * *[createBottomTabNavigator | React Navigation](https://reactnavigation.org/docs/bottom-tab-navigator)*
+* *[React Native Gesture Handler · Declarative API exposing platform native touch and gesture system to React Native.](https://software-mansion.github.io/react-native-gesture-handler/)*
+* *[React Native Reanimated](https://software-mansion.github.io/react-native-reanimated/index.html)*
